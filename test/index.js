@@ -8,7 +8,7 @@ iconfont.svgicons2svgfont().then((fontData) => {
 
   const { destDir } = iconfont.options;
 
-  iconfont.readFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`)).then(file => {
+  iconfont.readFile(path.resolve(destDir, `${iconfont.options.fontFileName}.svg`)).then(file => {
     return iconfont.svg2ttf(file);
   }).then(ttf => {
     console.log('[test] ttf create success');
@@ -21,11 +21,24 @@ iconfont.svgicons2svgfont().then((fontData) => {
   }).then((fonts) => {
     console.log('[test] eot, woff, woff2 create success');
 
-    fontData.base64 = fonts[2].toString('base64');
+    fontData = {
+      ...fontData,
+      options: iconfont.options,
+      base64: fonts[2].toString('base64'),
+    }
     return iconfont.createDemo(fontData);
   }).then(() => {
     console.log('[test] demo created!');
-    return iconfont.create();
+
+    const iconfont2 = new Iconfont({
+      destDir: 'fonts2',
+      fontName: 'fontName',
+      cssPrefix: 'cssPrefix',
+      className: 'className',
+      fontFileName: 'fontFileName',
+    });
+
+    return iconfont2.create();
   }).then(() => {
     console.log('[test] create method run success!!!!');
   }).catch(err => {

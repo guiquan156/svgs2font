@@ -13,7 +13,10 @@ class Iconfont {
 
   constructor (options = {}) {
     const {
-      fontName = 'iconfont',
+      fontName = 'iconfont', // demo中的fontFamily
+      fontFileName = 'iconfont', // 生成文件的文件名，如iconfont.css
+      cssPrefix = 'icon', // css样式名前缀
+      className = 'iconfont', // 公用类名
       destDir = 'fonts',
       svgsPath = 'svgs',
       startUnicode = '\uE001',
@@ -25,14 +28,15 @@ class Iconfont {
 
     this.options = {
       fontName, destDir, svgsPath, startUnicode, isCreateDemo,
-      iconfontTplPath, demoHtmlTplPath, demoCssTplPath
+      iconfontTplPath, demoHtmlTplPath, demoCssTplPath,
+      fontFileName, cssPrefix, className
     };
   }
 
   async create () {
-    const { isCreateDemo, destDir } = this.options;
-    const fontData = await this.svgicons2svgfont();
-    const svg = await this.readFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`));
+    const { isCreateDemo, destDir, fontFileName } = this.options;
+    let fontData = await this.svgicons2svgfont();
+    const svg = await this.readFile(path.resolve(destDir, `${fontFileName}.svg`));
     const ttf = await this.svg2ttf(svg);
 
     const fonts = await Promise.all([
@@ -42,13 +46,17 @@ class Iconfont {
     ]);
 
     if (isCreateDemo) {
-      fontData.base64 = fonts[2].toString('base64');
+      fontData = {
+        ...fontData,
+        options: this.options,
+        base64: fonts[2].toString('base64')
+      };
       this.createDemo(fontData);
     }
   }
 
   svgicons2svgfont () {
-    const {fontName, destDir, svgsPath, startUnicode} = this.options;
+    const {fontName, destDir, svgsPath, startUnicode, fontFileName} = this.options;
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
@@ -57,7 +65,7 @@ class Iconfont {
       glyphs: []
     };
     return new Promise((resolve, reject) => {
-      fontStream.pipe(fs.createWriteStream(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`)))
+      fontStream.pipe(fs.createWriteStream(path.resolve(destDir, `${fontFileName}.svg`)))
         .on('finish', function () {
           resolve(fontData);
         })
@@ -88,11 +96,11 @@ class Iconfont {
   }
 
   svg2ttf (svg) {
-    const {destDir} = this.options;
+    const { destDir, fontFileName } = this.options;
 
     return new Promise((resolve, reject) => {
       const ttf = svg2ttf(svg, {});
-      this.writeFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.ttf`), ttf)
+      this.writeFile(path.resolve(destDir, `${fontFileName}.ttf`), ttf)
         .then(() => {
           resolve(ttf);
         }).catch(reject);
@@ -100,8 +108,8 @@ class Iconfont {
   }
 
   ttf2eot (ttf) {
-    const { destDir } = this.options;
-    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.eot`);
+    const { destDir, fontFileName } = this.options;
+    const filePath = path.resolve(destDir, `${fontFileName}.eot`);
     const eotBuff = Buffer.from(ttf2eot(ttf.buffer).buffer);
 
     return new Promise((resolve, reject) => {
@@ -112,21 +120,20 @@ class Iconfont {
   }
 
   ttf2woff (ttf) {
-    const { destDir } = this.options;
-    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff`);
+    const { destDir, fontFileName } = this.options;
+    const filePath = path.resolve(destDir, `${fontFileName}.woff`);
     const woffBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
 
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, woffBuff).then(() => {
         resolve(woffBuff);
       }).catch(reject);
-
     });
   }
 
   ttf2woff2 (ttf) {
-    const { destDir } = this.options;
-    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff2`);
+    const { destDir, fontFileName } = this.options;
+    const filePath = path.resolve(destDir, `${fontFileName}.woff2`);
     const woff2Buff = Buffer.from(ttf2woff(ttf.buffer).buffer);
 
     return new Promise((resolve, reject) => {
@@ -141,7 +148,8 @@ class Iconfont {
       destDir,
       iconfontTplPath,
       demoHtmlTplPath,
-      demoCssTplPath
+      demoCssTplPath,
+      fontFileName
     } = this.options;
 
     const [
@@ -159,7 +167,7 @@ class Iconfont {
     const demoCss = ejs.render(demoCssTpl, fontData);
 
     return Promise.all([
-      this.writeFile(path.resolve(destDir, 'iconfont.css'), iconfont, 'utf-8'),
+      this.writeFile(path.resolve(destDir, `${fontFileName}.css`), iconfont, 'utf-8'),
       this.writeFile(path.resolve(destDir, 'demo.html'), demoHtml, 'utf-8'),
       this.writeFile(path.resolve(destDir, 'demo.css'), demoCss, 'utf-8')
     ]);
@@ -199,7 +207,5 @@ class Iconfont {
     });
   }
 }
-
-Iconfont.FONT_FILE_NAME = 'iconfont';
 
 module.exports = Iconfont;
