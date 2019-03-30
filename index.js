@@ -17,19 +17,34 @@ class Iconfont {
       destDir = 'fonts',
       svgsPath = 'svgs',
       startUnicode = '\uE001',
+      isCreateDemo = true,
       iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'),
       demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'),
       demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css')
     } = options;
 
     this.options = {
-      fontName, destDir, svgsPath, startUnicode,
+      fontName, destDir, svgsPath, startUnicode, isCreateDemo,
       iconfontTplPath, demoHtmlTplPath, demoCssTplPath
     };
   }
 
   async create () {
+    const { isCreateDemo, destDir } = this.options;
+    const fontData = await this.svgicons2svgfont();
+    const svg = await this.readFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`));
+    const ttf = await this.svg2ttf(svg);
 
+    const fonts = await Promise.all([
+      this.ttf2eot(ttf),
+      this.ttf2woff(ttf),
+      this.ttf2woff2(ttf)
+    ]);
+
+    if (isCreateDemo) {
+      fontData.base64 = fonts[2].toString('base64');
+      this.createDemo(fontData);
+    }
   }
 
   svgicons2svgfont () {
@@ -61,7 +76,7 @@ class Iconfont {
             };
             fontData.glyphs.push({
               hex: unicode.charCodeAt(0).toString(16),
-              name: glyph.name
+              name: glyph.metadata.name
             });
             fontStream.write(glyph);
           });
