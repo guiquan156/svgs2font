@@ -1,7 +1,13 @@
 const Iconfont = require('../index');
 const path = require('path');
 
-const iconfont = new Iconfont();
+const iconfont = new Iconfont({
+  destDir: 'fonts',
+  fontName: 'fontName',
+  cssPrefix: 'cssPrefix',
+  className: 'className',
+  fontFileName: 'fontFileName'
+});
 
 iconfont.svgicons2svgfont().then((fontData) => {
   console.log('[test] svgicons2svgfont success');
@@ -29,16 +35,7 @@ iconfont.svgicons2svgfont().then((fontData) => {
     return iconfont.createDemo(fontData);
   }).then(() => {
     console.log('[test] demo created!');
-
-    const iconfont2 = new Iconfont({
-      destDir: 'fonts2',
-      fontName: 'fontName',
-      cssPrefix: 'cssPrefix',
-      className: 'className',
-      fontFileName: 'fontFileName',
-    });
-
-    return iconfont2.create();
+    return iconfont.create();
   }).then(() => {
     console.log('[test] create method run success!!!!');
   }).catch(err => {
