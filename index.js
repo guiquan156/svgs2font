@@ -58,6 +58,15 @@ class Iconfont {
     });
   }
 
+  svg2ttf (svg) {
+    const {destDir} = this.options;
+
+    return new Promise((resolve, reject) => {
+      const ttf = svg2ttf(svg, {});
+      this.writeFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.ttf`), ttf);
+    });
+  }
+
   readDir (dirPath) {
     return new Promise(function (resolve, reject) {
       fs.readdir(dirPath, function (err, fileList) {
