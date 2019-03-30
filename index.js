@@ -17,19 +17,20 @@ class Iconfont {
       fontFileName = 'iconfont', // 生成文件的文件名，如iconfont.css
       cssPrefix = 'icon', // css样式名前缀
       className = 'iconfont', // 公用类名
-      destDir = 'fonts',
-      svgsPath = 'svgs',
-      startUnicode = '\uE001',
-      isCreateDemo = true,
-      iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'),
-      demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'),
-      demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css')
+      destDir = 'fonts', // 导出的目录
+      svgsPath = 'svgs', // svg存放svg的目录
+      startUnicode = '\uE001', // 没有指定unicode时，unicode的最小值
+      isCreateDemo = true, // 是否同时创建demo
+      iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'), // iconfont.css模板
+      demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'), // demo.html模板(copy from ali iconfont)，一般不需要修改
+      demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css'), // demo.css模板(copy from ali iconfont)，一般不需要修改
+      iconInfos = {} // 设定iconfont对应的unicode，title，name；key为文件名
     } = options;
 
     this.options = {
       fontName, destDir, svgsPath, startUnicode, isCreateDemo,
       iconfontTplPath, demoHtmlTplPath, demoCssTplPath,
-      fontFileName, cssPrefix, className
+      fontFileName, cssPrefix, className, iconInfos
     };
   }
 
@@ -56,7 +57,7 @@ class Iconfont {
   }
 
   svgicons2svgfont () {
-    const {fontName, destDir, svgsPath, startUnicode, fontFileName} = this.options;
+    const {fontName, destDir, svgsPath, startUnicode, fontFileName, iconInfos} = this.options;
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
@@ -74,16 +75,54 @@ class Iconfont {
         });
 
         this.readDir(svgsPath).then(fileList => {
-          fileList.forEach((file, index) => {
+          const unicordRecord = {}; // 记录已经被占用的unicode
+          let curUnicode = startUnicode; // unicode记录当前位置
+          const getUnicode = () => {
+            while (true) {
+              let _cur = curUnicode;
+              curUnicode = this.unicodeAdd(curUnicode, 1); // 往后移一位
+              if (!unicordRecord[_cur]) { // 不在iconInfos中，未被占用，返回这个unicode
+                return _cur;
+              }
+            }
+          };
+
+          // 优先遍历iconInfos
+          fileList = fileList.filter((file, index) => {
+            const baseName = path.basename(file, '.svg');
+
+            if (!iconInfos[baseName]) return true; // 不存在，跳过在下面的循环处理
+
             const filePath = path.resolve(svgsPath, file);
             const glyph = fs.createReadStream(filePath);
-            const unicode = this.unicodeAdd(startUnicode, index);
+            const info = iconInfos[baseName];
+
+            glyph.metadata = {
+              unicode: [info.unicode],
+              name: info.name || baseName
+            };
+            fontData.glyphs.push({
+              hex: info.unicode.charCodeAt(0).toString(16),
+              title: info.title || info.name || baseName,
+              name: glyph.metadata.name
+            });
+            fontStream.write(glyph);
+            unicordRecord[info.unicode] = true;
+            return false; // 已处理，下次遍历不循环
+          });
+
+          fileList.forEach((file, index) => {
+            const filePath = path.resolve(svgsPath, file);
+            const baseName = path.basename(file, '.svg');
+            const glyph = fs.createReadStream(filePath);
+            const unicode = getUnicode();
             glyph.metadata = {
               unicode: [unicode],
-              name: `icon${index}`
+              name: baseName
             };
             fontData.glyphs.push({
               hex: unicode.charCodeAt(0).toString(16),
+              title: baseName,
               name: glyph.metadata.name
             });
             fontStream.write(glyph);

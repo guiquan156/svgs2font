@@ -6,7 +6,19 @@ const iconfont = new Iconfont({
   fontName: 'fontName',
   cssPrefix: 'cssPrefix',
   className: 'className',
-  fontFileName: 'fontFileName'
+  fontFileName: 'fontFileName',
+  iconInfos: {
+    'Dollar2': {
+      unicode: '\uE002',
+      name: 'dollar2',
+      title: '美元'
+    },
+    'check-circle': {
+      unicode: '\uE013',
+      name: 'checkCircle',
+      title: '检查圆形'
+    }
+  }
 });
 
 iconfont.svgicons2svgfont().then((fontData) => {
