@@ -78,6 +78,22 @@ class Iconfont {
     return this.writeFile(filePath, eotBuff);
   }
 
+  ttf2woff (ttf) {
+    const { destDir } = this.options;
+    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff`);
+    const eotBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+
+    return this.writeFile(filePath, eotBuff);
+  }
+
+  ttf2woff2 (ttf) {
+    const { destDir } = this.options;
+    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff2`);
+    const eotBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+
+    return this.writeFile(filePath, eotBuff);
+  }
+
   readDir (dirPath) {
     return new Promise(function (resolve, reject) {
       fs.readdir(dirPath, function (err, fileList) {

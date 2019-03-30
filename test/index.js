@@ -14,22 +14,16 @@ iconfont.svgicons2svgfont().then(() => {
     console.log('ttf create success');
 
     return Promise.all([
-      iconfont.ttf2eot(ttf)
+      iconfont.ttf2eot(ttf),
+      iconfont.ttf2woff(ttf),
+      iconfont.ttf2woff2(ttf)
     ]);
 
+  }).then(() => {
+    console.log('eot, woff, woff2 create success');
   }).catch(err => {
     throw err;
   });
-
-
-
-
-
-
-
-
-
-
 
 }).catch(err => {
   throw err;
