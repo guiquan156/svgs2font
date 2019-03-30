@@ -51,14 +51,14 @@
         </ul>
         <p>使用步骤如下：</p>
         <h3 id="-fontclass-">第一步：引入项目下面生成的 fontclass 代码：</h3>
-<pre><code class="language-html">&lt;link rel="stylesheet" href="./iconfont.css"&gt;
+<pre><code class="language-html">&lt;link rel="stylesheet" href="./<%=options.fontFileName%>.css"&gt;
 </code></pre>
         <h3 id="-">第二步：挑选相应图标并获取类名，应用于页面：</h3>
-<pre><code class="language-html">&lt;span class="iconfont icon-xxx"&gt;&lt;/span&gt;
+<pre><code class="language-html">&lt;span class="<%=options.className%> <%=options.cssPrefix%>-xxx"&gt;&lt;/span&gt;
 </code></pre>
         <blockquote>
           <p>"
-            iconfont" 是你项目下的 font-family。可以通过编辑项目查看，默认是 "iconfont"。</p>
+            <%=fontName%>" 是你项目下的 font-family。可以通过编辑项目查看，默认是 "<%=fontName%>"。</p>
         </blockquote>
       </div>
       </div>
