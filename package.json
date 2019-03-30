@@ -15,6 +15,7 @@
   "author": "Lian",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^2.6.1",
     "svg2ttf": "^4.2.0",
     "svgicons2svgfont": "^9.0.4",
     "ttf2eot": "^2.0.0",

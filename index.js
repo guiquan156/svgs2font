@@ -7,6 +7,7 @@ const svg2ttf = require('svg2ttf');
 const ttf2eot = require('ttf2eot');
 const ttf2woff = require('ttf2woff');
 const ttf2woff2 = require('ttf2woff2');
+const ejs = require('ejs');
 
 class Iconfont {
 
@@ -15,11 +16,15 @@ class Iconfont {
       fontName = 'iconfont',
       destDir = 'fonts',
       svgsPath = 'svgs',
-      startUnicode = '\uE001'
+      startUnicode = '\uE001',
+      iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'),
+      demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'),
+      demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css')
     } = options;
 
     this.options = {
-      fontName, destDir, svgsPath, startUnicode
+      fontName, destDir, svgsPath, startUnicode,
+      iconfontTplPath, demoHtmlTplPath, demoCssTplPath
     };
   }
 
@@ -32,10 +37,14 @@ class Iconfont {
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
+    const fontData = {
+      fontName,
+      glyphs: []
+    };
     return new Promise((resolve, reject) => {
       fontStream.pipe(fs.createWriteStream(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`)))
         .on('finish', function () {
-          resolve();
+          resolve(fontData);
         })
         .on('error', function (err) {
           reject(err);
@@ -45,10 +54,15 @@ class Iconfont {
           fileList.forEach((file, index) => {
             const filePath = path.resolve(svgsPath, file);
             const glyph = fs.createReadStream(filePath);
+            const unicode = this.unicodeAdd(startUnicode, index);
             glyph.metadata = {
-              unicode: [startUnicode],
+              unicode: [unicode],
               name: `icon${index}`
             };
+            fontData.glyphs.push({
+              hex: unicode.charCodeAt(0).toString(16),
+              name: glyph.name
+            });
             fontStream.write(glyph);
           });
           fontStream.end();
@@ -75,23 +89,72 @@ class Iconfont {
     const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.eot`);
     const eotBuff = Buffer.from(ttf2eot(ttf.buffer).buffer);
 
-    return this.writeFile(filePath, eotBuff);
+    return new Promise((resolve, reject) => {
+      this.writeFile(filePath, eotBuff).then(() => {
+        resolve(eotBuff);
+      }).catch(reject);
+    });
   }
 
   ttf2woff (ttf) {
     const { destDir } = this.options;
     const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff`);
-    const eotBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+    const woffBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
 
-    return this.writeFile(filePath, eotBuff);
+    return new Promise((resolve, reject) => {
+      this.writeFile(filePath, woffBuff).then(() => {
+        resolve(woffBuff);
+      }).catch(reject);
+
+    });
   }
 
   ttf2woff2 (ttf) {
     const { destDir } = this.options;
     const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.woff2`);
-    const eotBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+    const woff2Buff = Buffer.from(ttf2woff(ttf.buffer).buffer);
 
-    return this.writeFile(filePath, eotBuff);
+    return new Promise((resolve, reject) => {
+      this.writeFile(filePath, woff2Buff).then(() => {
+        resolve(woff2Buff);
+      }).catch(reject);
+    });
+  }
+
+  async createDemo (fontData) {
+    const {
+      destDir,
+      iconfontTplPath,
+      demoHtmlTplPath,
+      demoCssTplPath
+    } = this.options;
+
+    const [
+      iconfontTpl,
+      demoHtmlTpl,
+      demoCssTpl
+    ] = await Promise.all([
+      this.readFile(iconfontTplPath),
+      this.readFile(demoHtmlTplPath),
+      this.readFile(demoCssTplPath)
+    ]);
+
+    const iconfont = ejs.render(iconfontTpl, fontData);
+    const demoHtml = ejs.render(demoHtmlTpl, fontData);
+    const demoCss = ejs.render(demoCssTpl, fontData);
+
+    return Promise.all([
+      this.writeFile(path.resolve(destDir, 'iconfont.css'), iconfont, 'utf-8'),
+      this.writeFile(path.resolve(destDir, 'demo.html'), demoHtml, 'utf-8'),
+      this.writeFile(path.resolve(destDir, 'demo.css'), demoCss, 'utf-8')
+    ]);
+  }
+
+  unicodeAdd (unicode, num) {
+    const charCode = unicode.charCodeAt(0) + num;
+    const result = String.fromCharCode(charCode);
+
+    return result;
   }
 
   readDir (dirPath) {
