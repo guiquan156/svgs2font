@@ -10,8 +10,13 @@ iconfont.svgicons2svgfont().then(() => {
 
   iconfont.readFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.svg`)).then(file => {
     return iconfont.svg2ttf(file);
-  }).then(() => {
+  }).then(ttf => {
     console.log('ttf create success');
+
+    return Promise.all([
+      iconfont.ttf2eot(ttf)
+    ]);
+
   }).catch(err => {
     throw err;
   });

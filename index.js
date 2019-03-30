@@ -63,8 +63,19 @@ class Iconfont {
 
     return new Promise((resolve, reject) => {
       const ttf = svg2ttf(svg, {});
-      this.writeFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.ttf`), ttf);
+      this.writeFile(path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.ttf`), ttf)
+        .then(() => {
+          resolve(ttf);
+        }).catch(reject);
     });
+  }
+
+  ttf2eot (ttf) {
+    const { destDir } = this.options;
+    const filePath = path.resolve(destDir, `${Iconfont.FONT_FILE_NAME}.eot`);
+    const eotBuff = Buffer.from(ttf2eot(ttf.buffer).buffer);
+
+    return this.writeFile(filePath, eotBuff);
   }
 
   readDir (dirPath) {
