@@ -17,9 +17,9 @@ class Iconfont {
       fontFileName = 'iconfont', // 生成文件的文件名，如iconfont.css
       cssPrefix = 'icon', // css样式名前缀
       className = 'iconfont', // 公用类名
-      destDir = 'fonts', // 导出的目录
-      svgsPath = 'svgs', // svg存放svg的目录
-      startUnicode = '\uE001', // 没有指定unicode时，unicode的最小值
+      destDir = path.resolve(process.cwd(), 'fonts'), // 导出的目录
+      svgsPath = path.resolve(process.cwd(), 'svgs'), // svg存放svg的目录
+      startUnicode = '\uE600', // 没有指定unicode时，unicode的最小值
       isCreateDemo = true, // 是否同时创建demo
       iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'), // iconfont.css模板
       demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'), // demo.html模板(copy from ali iconfont)，一般不需要修改
