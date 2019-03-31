@@ -30,8 +30,6 @@ async function create () {
     fileOpt = require(filePath);
   }
 
-  console.log(1, program.destDir);
-
   let options = {
     fontName: program.fontName || fileOpt.fontName,
     fontFileName: program.fontFileName || fileOpt.fontFileName,
@@ -42,8 +40,6 @@ async function create () {
     startUnicode: program.startUnicode || fileOpt.startUnicode,
     isCreateDemo: program.isCreateDemo || fileOpt.isCreateDemo
   };
-
-  console.log(options);
 
   const iconfont = new Iconfont(options);
   iconfont.create();

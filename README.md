@@ -2,6 +2,9 @@
 
 
 ### Install
+```
+[sudo] npm install -g svgs2font
+```
 
 ### CLI
 
