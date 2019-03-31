@@ -9,7 +9,7 @@ const ttf2woff = require('ttf2woff');
 const ttf2woff2 = require('ttf2woff2');
 const ejs = require('ejs');
 
-class Iconfont {
+class Svgs2font {
 
   constructor (options = {}) {
     const {
@@ -246,4 +246,4 @@ class Iconfont {
   }
 }
 
-module.exports = Iconfont;
+module.exports = Svgs2font;

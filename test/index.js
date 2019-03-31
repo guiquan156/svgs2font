@@ -6,7 +6,6 @@ const mocha = require('mocha');
 const { assert } = require('chai');
 
 const Iconfont = require('../index');
-const command = require('../iconfont');
 
 const iconfont = new Iconfont({
   destDir: 'test/fonts/dest1',

@@ -1,9 +1,9 @@
 {
-  "name": "iconfont",
+  "name": "svgs2font",
   "version": "1.0.0",
   "description": "create iconfont from svgs",
   "main": "index.js",
-  "bin": "iconfont.js",
+  "bin": "svgs2font.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/guiquan156/iconfont.git"

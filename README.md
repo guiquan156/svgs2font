@@ -7,7 +7,7 @@
 
 #### usage
 ```
-  iconfont --configFile iconfont.config.js
+  svgs2font --configFile iconfont.config.js
 ```
 
 #### iconfont.config.js
@@ -37,7 +37,7 @@ module.exports = {
 
 #### other options
 
-use ```iconfont -h``` to show all options;
+use ```svgs2font -h``` to show all options;
 
 ```
   -V  --version                      output the version number
@@ -56,8 +56,8 @@ use ```iconfont -h``` to show all options;
 ### use in node
 
 ```
-const Iconfont = require('iconfont');
+const Svgs2font = require('svgs2font');
 const options = {}; // same with the exports of iconfont.config.js
-const iconfont = new Iconfont(options);
-iconfont.create();
+const svgs2font = new Svg2font(options);
+svgs2font.create();
 ```
