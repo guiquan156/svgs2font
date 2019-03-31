@@ -91,7 +91,8 @@ class Svgs2font {
           fileList = fileList.filter((file, index) => {
             const baseName = path.basename(file, '.svg');
 
-            if (!iconInfos[baseName]) return true; // 不存在，跳过在下面的循环处理
+            // 不存在或没有指定unicode，跳过在下面的循环处理
+            if (!iconInfos[baseName] || !iconInfos[baseName].unicode) return true;
 
             const filePath = path.resolve(svgsPath, file);
             const glyph = fs.createReadStream(filePath);
@@ -116,13 +117,14 @@ class Svgs2font {
             const baseName = path.basename(file, '.svg');
             const glyph = fs.createReadStream(filePath);
             const unicode = getUnicode();
+            const iconInfo = iconInfos[baseName] || {};
             glyph.metadata = {
               unicode: [unicode],
-              name: baseName
+              name: iconInfo.name || baseName
             };
             fontData.glyphs.push({
               hex: unicode.charCodeAt(0).toString(16),
-              title: baseName,
+              title: iconInfo.title || baseName,
               name: glyph.metadata.name
             });
             fontStream.write(glyph);
