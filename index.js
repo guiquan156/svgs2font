@@ -41,9 +41,9 @@ class Iconfont {
     const ttf = await this.svg2ttf(svg);
 
     const fonts = await Promise.all([
-      this.ttf2eot(ttf),
-      this.ttf2woff(ttf),
-      this.ttf2woff2(ttf)
+      this.ttf2eot(ttf.buffer),
+      this.ttf2woff(ttf.buffer),
+      this.ttf2woff2(ttf.buffer)
     ]);
 
     if (isCreateDemo) {
@@ -139,18 +139,17 @@ class Iconfont {
 
     return new Promise((resolve, reject) => {
       const ttf = svg2ttf(svg, {});
-      this.writeFile(path.resolve(destDir, `${fontFileName}.ttf`), ttf)
+      this.writeFile(path.resolve(destDir, `${fontFileName}.ttf`), ttf.buffer)
         .then(() => {
           resolve(ttf);
         }).catch(reject);
     });
   }
 
-  ttf2eot (ttf) {
+  ttf2eot (ttfUint8Arr) {
     const { destDir, fontFileName } = this.options;
     const filePath = path.resolve(destDir, `${fontFileName}.eot`);
-    const eotBuff = Buffer.from(ttf2eot(ttf.buffer).buffer);
-
+    const eotBuff = Buffer.from(ttf2eot(ttfUint8Arr).buffer);
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, eotBuff).then(() => {
         resolve(eotBuff);
@@ -158,10 +157,10 @@ class Iconfont {
     });
   }
 
-  ttf2woff (ttf) {
+  ttf2woff (ttfUint8Arr) {
     const { destDir, fontFileName } = this.options;
     const filePath = path.resolve(destDir, `${fontFileName}.woff`);
-    const woffBuff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+    const woffBuff = Buffer.from(ttf2woff(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, woffBuff).then(() => {
@@ -170,10 +169,10 @@ class Iconfont {
     });
   }
 
-  ttf2woff2 (ttf) {
+  ttf2woff2 (ttfUint8Arr) {
     const { destDir, fontFileName } = this.options;
     const filePath = path.resolve(destDir, `${fontFileName}.woff2`);
-    const woff2Buff = Buffer.from(ttf2woff(ttf.buffer).buffer);
+    const woff2Buff = Buffer.from(ttf2woff(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, woff2Buff).then(() => {

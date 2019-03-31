@@ -2,7 +2,7 @@ const Iconfont = require('../index');
 const path = require('path');
 
 const iconfont = new Iconfont({
-  destDir: 'fonts',
+  // destDir: 'fonts',
   fontName: 'fontName',
   cssPrefix: 'cssPrefix',
   className: 'className',
@@ -32,9 +32,9 @@ iconfont.svgicons2svgfont().then((fontData) => {
     console.log('[test] ttf create success');
 
     return Promise.all([
-      iconfont.ttf2eot(ttf),
-      iconfont.ttf2woff(ttf),
-      iconfont.ttf2woff2(ttf)
+      iconfont.ttf2eot(ttf.buffer),
+      iconfont.ttf2woff(ttf.buffer),
+      iconfont.ttf2woff2(ttf.buffer)
     ]);
   }).then((fonts) => {
     console.log('[test] eot, woff, woff2 create success');
