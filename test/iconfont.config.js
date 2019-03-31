@@ -1,5 +1,5 @@
 module.exports = {
-  destDir: 'test/fonts/dest1',
+  destDir: 'test/fonts/dest2',
   svgsPath: 'test/svgs',
   fontName: 'fontName',
   cssPrefix: 'cssPrefix',

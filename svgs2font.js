@@ -6,9 +6,8 @@ const path = require('path');
 const program = require('commander');
 
 const pkg = require('./package.json');
-const Iconfont = require('./index');
+const Svgs2font = require('./index');
 
-// todo 参数及说明
 program
   .version(pkg.version)
   .option('-n, --fontName [fontName]', 'fontFamily name in css, default: iconfont')
@@ -38,11 +37,12 @@ async function create () {
     destDir: program.destDir || fileOpt.destDir,
     svgsPath: program.svgsPath || fileOpt.svgsPath,
     startUnicode: program.startUnicode || fileOpt.startUnicode,
-    isCreateDemo: program.isCreateDemo || fileOpt.isCreateDemo
+    isCreateDemo: program.isCreateDemo || fileOpt.isCreateDemo,
+    iconInfos: fileOpt.iconInfos || {}
   };
 
-  const iconfont = new Iconfont(options);
-  iconfont.create();
+  const svgs2font = new Svgs2font(options);
+  svgs2font.create();
 }
 
 create();
