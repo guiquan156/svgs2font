@@ -9,7 +9,7 @@
     "url": "https://github.com/guiquan156/iconfont.git"
   },
   "scripts": {
-    "test": "mocha test/test.js"
+    "test": "mocha test"
   },
   "keywords": [
     "iconfont",

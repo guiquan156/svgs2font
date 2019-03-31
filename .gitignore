@@ -47,4 +47,5 @@ jspm_packages
 dist
 
 # test fonts
-test/fonts/*
+test/fonts/dest1/*
+test/fonts/dest2/*
