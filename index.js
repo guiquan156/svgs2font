@@ -116,7 +116,7 @@ class Svgs2font {
               } else {
                 newName = `0x${hex}-${newName}`;
               }
-              fs.rename(filePath, path.resolve(svgsPath, `${newName}.svg`));
+              fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
             }
 
             glyph.metadata = {
@@ -140,11 +140,12 @@ class Svgs2font {
             const unicode = (function () {
               if (prependUnicode) {
                 if (prependReg.test(baseName)) {
-                  return baseName.match(prependReg)(1)
+                  let _hex = baseName.match(prependReg)(1).replace('0x', '');
+                  return _hex.fromCharCode(parseInt(_hex, 16)); // 转为unicode
                 } else {
                   let _uc = getUnicode();
                   let newName = `0x${_uc.charCodeAt(0).toString(16)}-${newName}`;
-                  fs.rename(filePath, path.resolve(svgsPath, `${newName}.svg`));
+                  fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
                   return _uc;
                 }
               } else {
