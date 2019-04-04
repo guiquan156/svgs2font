@@ -17,27 +17,36 @@ class Svgs2font {
       fontFileName = 'iconfont', // 生成文件的文件名，如iconfont.css
       cssPrefix = 'icon', // css样式名前缀
       className = 'iconfont', // 公用类名
-      destDir = path.resolve(process.cwd(), 'fonts'), // 导出的目录
+      output = path.resolve(process.cwd(), 'fonts'), // 导出的目录
       svgsPath = path.resolve(process.cwd(), 'svgs'), // svg存放svg的目录
       startUnicode = '\uE600', // 没有指定unicode时，unicode的最小值
       isCreateDemo = true, // 是否同时创建demo
       iconfontTplPath = path.resolve(__dirname, 'tmpls/iconfontTpl.css'), // iconfont.css模板
       demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'), // demo.html模板(copy from ali iconfont)，一般不需要修改
       demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css'), // demo.css模板(copy from ali iconfont)，一般不需要修改
-      iconInfos = {} // 设定iconfont对应的unicode，title，name；key为文件名，可以设置unicode、name（默认basename）、title（默认name，demo中显示）
+      iconInfos = {}, // 设定iconfont对应的unicode，title，name；key为文件名，可以设置unicode、name（默认basename）、title（默认name，demo中显示）
+
+      fontStyle, fontWeight, fixedWidth, centerHorizontally, normalize,
+      fontHeight, round, ascent, log = function () {}
     } = options;
 
     this.options = {
-      fontName, destDir, svgsPath, startUnicode, isCreateDemo,
+      fontName, output, svgsPath, startUnicode, isCreateDemo,
       iconfontTplPath, demoHtmlTplPath, demoCssTplPath,
       fontFileName, cssPrefix, className, iconInfos
     };
+
+    // options for svgicons2svgfont
+    this.svgiconsOpt = {
+      fontName, fontStyle, fontWeight, fixedWidth, centerHorizontally, normalize,
+      fontHeight, round, ascent, log
+    }
   }
 
   async create () {
-    const { isCreateDemo, destDir, fontFileName } = this.options;
-    let fontData = await this.svgicons2svgfont();
-    const svg = await this.readFile(path.resolve(destDir, `${fontFileName}.svg`));
+    const { isCreateDemo, output, fontFileName } = this.options;
+    let fontData = await this.svgicons2svgfont(this.svgiconsOpt);
+    const svg = await this.readFile(path.resolve(output, `${fontFileName}.svg`));
     const ttf = await this.svg2ttf(svg);
 
     const fonts = await Promise.all([
@@ -57,7 +66,7 @@ class Svgs2font {
   }
 
   svgicons2svgfont () {
-    const {fontName, destDir, svgsPath, startUnicode, fontFileName, iconInfos} = this.options;
+    const {fontName, output, svgsPath, startUnicode, fontFileName, iconInfos} = this.options;
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
@@ -66,7 +75,7 @@ class Svgs2font {
       glyphs: []
     };
     return new Promise((resolve, reject) => {
-      fontStream.pipe(fs.createWriteStream(path.resolve(destDir, `${fontFileName}.svg`)))
+      fontStream.pipe(fs.createWriteStream(path.resolve(output, `${fontFileName}.svg`)))
         .on('finish', function () {
           resolve(fontData);
         })
@@ -137,11 +146,11 @@ class Svgs2font {
   }
 
   svg2ttf (svg) {
-    const { destDir, fontFileName } = this.options;
+    const { output, fontFileName } = this.options;
 
     return new Promise((resolve, reject) => {
       const ttf = svg2ttf(svg, {});
-      this.writeFile(path.resolve(destDir, `${fontFileName}.ttf`), ttf.buffer)
+      this.writeFile(path.resolve(output, `${fontFileName}.ttf`), ttf.buffer)
         .then(() => {
           resolve(ttf);
         }).catch(reject);
@@ -149,8 +158,8 @@ class Svgs2font {
   }
 
   ttf2eot (ttfUint8Arr) {
-    const { destDir, fontFileName } = this.options;
-    const filePath = path.resolve(destDir, `${fontFileName}.eot`);
+    const { output, fontFileName } = this.options;
+    const filePath = path.resolve(output, `${fontFileName}.eot`);
     const eotBuff = Buffer.from(ttf2eot(ttfUint8Arr).buffer);
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, eotBuff).then(() => {
@@ -160,8 +169,8 @@ class Svgs2font {
   }
 
   ttf2woff (ttfUint8Arr) {
-    const { destDir, fontFileName } = this.options;
-    const filePath = path.resolve(destDir, `${fontFileName}.woff`);
+    const { output, fontFileName } = this.options;
+    const filePath = path.resolve(output, `${fontFileName}.woff`);
     const woffBuff = Buffer.from(ttf2woff(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
@@ -172,8 +181,8 @@ class Svgs2font {
   }
 
   ttf2woff2 (ttfUint8Arr) {
-    const { destDir, fontFileName } = this.options;
-    const filePath = path.resolve(destDir, `${fontFileName}.woff2`);
+    const { output, fontFileName } = this.options;
+    const filePath = path.resolve(output, `${fontFileName}.woff2`);
     const woff2Buff = Buffer.from(ttf2woff2(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
@@ -185,7 +194,7 @@ class Svgs2font {
 
   async createDemo (fontData) {
     const {
-      destDir,
+      output,
       iconfontTplPath,
       demoHtmlTplPath,
       demoCssTplPath,
@@ -207,9 +216,9 @@ class Svgs2font {
     const demoCss = ejs.render(demoCssTpl, fontData);
 
     return Promise.all([
-      this.writeFile(path.resolve(destDir, `${fontFileName}.css`), iconfont, 'utf-8'),
-      this.writeFile(path.resolve(destDir, 'demo.html'), demoHtml, 'utf-8'),
-      this.writeFile(path.resolve(destDir, 'demo.css'), demoCss, 'utf-8')
+      this.writeFile(path.resolve(output, `${fontFileName}.css`), iconfont, 'utf-8'),
+      this.writeFile(path.resolve(output, 'demo.html'), demoHtml, 'utf-8'),
+      this.writeFile(path.resolve(output, 'demo.css'), demoCss, 'utf-8')
     ]);
   }
 

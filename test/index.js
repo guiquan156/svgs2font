@@ -8,7 +8,7 @@ const { assert } = require('chai');
 const Iconfont = require('../index');
 
 const iconfont = new Iconfont({
-  destDir: 'test/fonts/dest1',
+  output: 'test/fonts/dest1',
   svgsPath: 'test/svgs',
   fontName: 'fontName',
   cssPrefix: 'cssPrefix',
@@ -45,9 +45,9 @@ const toArrayBuffer = (buffer) => {
 }
 
 describe('iconfont', function () {
-  const { destDir, fontFileName } = iconfont.options;
+  const { output, fontFileName } = iconfont.options;
   let fontData = {};
-  clearDir(destDir);
+  clearDir(output);
 
   describe('#svgicons2svgfont()', function () {
     it('should create an svgfont file and return fontData', async function () {
@@ -56,7 +56,7 @@ describe('iconfont', function () {
         assert.typeOf(fontData, 'object');
         assert.typeOf(fontData.fontName, 'string');
         assert.typeOf(fontData.glyphs, 'array');
-        const content = await iconfont.readFile(path.resolve(destDir, `${fontFileName}.svg`));
+        const content = await iconfont.readFile(path.resolve(output, `${fontFileName}.svg`));
         assert.typeOf(content, 'string');
         return Promise.resolve();
       } catch (err) {
@@ -67,7 +67,7 @@ describe('iconfont', function () {
 
   describe('#svg2ttf', function () {
     it('should create an ttf file', function (done, fail) {
-      const svgFont = fs.readFileSync(path.resolve(destDir, `${fontFileName}.svg`), 'utf-8');
+      const svgFont = fs.readFileSync(path.resolve(output, `${fontFileName}.svg`), 'utf-8');
       iconfont.svg2ttf(svgFont).then((ttf) => {
         done();
       }).catch((err) => {
@@ -78,24 +78,24 @@ describe('iconfont', function () {
 
   describe('#ttf2eot(), #ttf2woff(), #ttf2woff2()', function () {
     it('should create eot file by ttf', function () {
-      const buf = fs.readFileSync(path.resolve(destDir, `${fontFileName}.ttf`));
+      const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2eot(ttf);
     });
     it('should create woff file by ttf', function () {
-      const buf = fs.readFileSync(path.resolve(destDir, `${fontFileName}.ttf`));
+      const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2woff(ttf);
     });
     it('should create woff2 file by ttf', function () {
-      const buf = fs.readFileSync(path.resolve(destDir, `${fontFileName}.ttf`));
+      const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2woff2(ttf);
     });
   });
   describe('#createDemo', function () {
     it('should create demo', function () {
-      const woff2 = fs.readFileSync(path.resolve(destDir, `${fontFileName}.woff2`));
+      const woff2 = fs.readFileSync(path.resolve(output, `${fontFileName}.woff2`));
       fontData = {
         ...fontData,
         options: iconfont.options,
@@ -107,7 +107,7 @@ describe('iconfont', function () {
 
   describe('#create', function () {
     it('should create all fonts file and demo', function () {
-      clearDir(destDir);
+      clearDir(output);
       return iconfont.create();
     });
   });

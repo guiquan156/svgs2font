@@ -1,10 +1,11 @@
 module.exports = {
-  destDir: 'test/fonts/dest2',
+  output: 'test/fonts/dest2',
   svgsPath: 'test/svgs',
   fontName: 'fontName',
   cssPrefix: 'cssPrefix',
   className: 'className',
   fontFileName: 'fontFileName',
+  prependUnicode: true,
   iconInfos: {
     'Dollar2': {
       unicode: '\uE002',
