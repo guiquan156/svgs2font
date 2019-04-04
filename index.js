@@ -174,7 +174,7 @@ class Svgs2font {
   ttf2woff2 (ttfUint8Arr) {
     const { destDir, fontFileName } = this.options;
     const filePath = path.resolve(destDir, `${fontFileName}.woff2`);
-    const woff2Buff = Buffer.from(ttf2woff(ttfUint8Arr).buffer);
+    const woff2Buff = Buffer.from(ttf2woff2(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
       this.writeFile(filePath, woff2Buff).then(() => {
