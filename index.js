@@ -25,7 +25,7 @@ class Svgs2font {
       demoHtmlTplPath = path.resolve(__dirname, 'tmpls/demoTpl.html'), // demo.html模板(copy from ali iconfont)，一般不需要修改
       demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css'), // demo.css模板(copy from ali iconfont)，一般不需要修改
       iconInfos = {}, // 设定iconfont对应的unicode，title，name；key为文件名，可以设置unicode、name（默认basename）、title（默认name，demo中显示）
-
+      prependUnicode = false,
       fontStyle, fontWeight, fixedWidth, centerHorizontally, normalize,
       fontHeight, round, ascent, log = function () {}
     } = options;
@@ -33,7 +33,7 @@ class Svgs2font {
     this.options = {
       fontName, output, svgsPath, startUnicode, isCreateDemo,
       iconfontTplPath, demoHtmlTplPath, demoCssTplPath,
-      fontFileName, cssPrefix, className, iconInfos
+      fontFileName, cssPrefix, className, iconInfos, prependUnicode
     };
 
     // options for svgicons2svgfont
@@ -66,10 +66,11 @@ class Svgs2font {
   }
 
   svgicons2svgfont () {
-    const {fontName, output, svgsPath, startUnicode, fontFileName, iconInfos} = this.options;
+    const {fontName, output, svgsPath, startUnicode, fontFileName, iconInfos, prependUnicode} = this.options;
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
+    const prependReg = /(0x([1-9]|[a-e]){3})/i
     const fontData = {
       fontName,
       glyphs: []
@@ -106,13 +107,24 @@ class Svgs2font {
             const filePath = path.resolve(svgsPath, file);
             const glyph = fs.createReadStream(filePath);
             const info = iconInfos[baseName];
+            const hex = info.unicode.charCodeAt(0).toString(16);
+
+            if (prependUnicode) {
+              let newName = baseName;
+              if (prependReg.test(baseName)) {
+                newName.replace(prependReg, info.unicode);
+              } else {
+                newName = `0x${hex}-${newName}`;
+              }
+              fs.rename(filePath, path.resolve(svgsPath, `${newName}.svg`));
+            }
 
             glyph.metadata = {
               unicode: [info.unicode],
               name: info.name || baseName
             };
             fontData.glyphs.push({
-              hex: info.unicode.charCodeAt(0).toString(16),
+              hex,
               title: info.title || info.name || baseName,
               name: glyph.metadata.name
             });
@@ -125,14 +137,28 @@ class Svgs2font {
             const filePath = path.resolve(svgsPath, file);
             const baseName = path.basename(file, '.svg');
             const glyph = fs.createReadStream(filePath);
-            const unicode = getUnicode();
+            const unicode = (function () {
+              if (prependUnicode) {
+                if (prependReg.test(baseName)) {
+                  return baseName.match(prependReg)(1)
+                } else {
+                  let _uc = getUnicode();
+                  let newName = `0x${_uc.charCodeAt(0).toString(16)}-${newName}`;
+                  fs.rename(filePath, path.resolve(svgsPath, `${newName}.svg`));
+                  return _uc;
+                }
+              } else {
+                return getUnicode();
+              }
+            })();
             const iconInfo = iconInfos[baseName] || {};
+            const hex = unicode.charCodeAt(0).toString(16);
             glyph.metadata = {
               unicode: [unicode],
               name: iconInfo.name || baseName
             };
             fontData.glyphs.push({
-              hex: unicode.charCodeAt(0).toString(16),
+              hex,
               title: iconInfo.title || baseName,
               name: glyph.metadata.name
             });
