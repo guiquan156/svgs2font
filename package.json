@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "mocha test",
-    "test-cli": "./svgs2font.js --configFile test/iconfont.config.js"
+    "test-cli": "./svgs2font.js --configFile test/iconfont.config.js --prependUnicode"
   },
   "keywords": [
     "iconfont",

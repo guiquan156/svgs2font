@@ -8,12 +8,12 @@ module.exports = {
   prependUnicode: true,
   iconInfos: {
     'Dollar2': {
-      unicode: '\uE002',
+      unicode: '\uE602',
       name: 'dollar2',
       title: '美元'
     },
     'check-circle': {
-      unicode: '\uE013',
+      unicode: '\uE613',
       name: 'checkCircle',
       title: '检查圆形'
     }

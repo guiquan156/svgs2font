@@ -70,7 +70,7 @@ class Svgs2font {
     const fontStream = new SVGIcons2svgfont({
       fontName
     });
-    const prependReg = /(0x([1-9]|[a-e]){3})/i
+    const prependReg = /(?:0x((?:[0-9]|[a-e]){4})-)?(.*)/i
     const fontData = {
       fontName,
       glyphs: []
@@ -97,63 +97,62 @@ class Svgs2font {
             }
           };
 
-          // 优先遍历iconInfos
+          // 优先遍历iconInfos中配置了unicode和prependUnicode模式中的
+          // prependUnicode配置为false的也会识别code，但不会给文件名添加prepend一个unicode
+          // 两个冲突时优先使用配置文件的code
           fileList = fileList.filter((file, index) => {
             const baseName = path.basename(file, '.svg');
+            const baseMch = baseName.match(prependReg);
+            const iconName = baseMch ? baseMch[2] : baseName;
 
-            // 不存在或没有指定unicode，跳过在下面的循环处理
-            if (!iconInfos[baseName] || !iconInfos[baseName].unicode) return true;
+            const unicode = (function () {
+              if (iconInfos[iconName] && iconInfos[iconName].unicode) {
+                return iconInfos[iconName].unicode;
+              }
+              if (baseMch && baseMch[1]) {
+                return String.fromCharCode(parseInt(baseMch[1], 16));
+              }
+              return '';
+            })();
+
+            // 不存在或没有指定unicode或没有prependUnicode，跳过在下面的循环处理
+            if (!unicode) return true;
 
             const filePath = path.resolve(svgsPath, file);
             const glyph = fs.createReadStream(filePath);
-            const info = iconInfos[baseName];
-            const hex = info.unicode.charCodeAt(0).toString(16);
+            const info = iconInfos[iconName] || {};
+            const hex = unicode.charCodeAt(0).toString(16);
 
             if (prependUnicode) {
-              let newName = baseName;
-              if (prependReg.test(baseName)) {
-                newName.replace(prependReg, info.unicode);
-              } else {
-                newName = `0x${hex}-${newName}`;
-              }
+              let newName = `0x${hex}-${iconName}`;
               fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
             }
 
             glyph.metadata = {
-              unicode: [info.unicode],
-              name: info.name || baseName
+              unicode: [unicode],
+              name: info.name || iconName
             };
             fontData.glyphs.push({
               hex,
-              title: info.title || info.name || baseName,
+              title: info.title || info.name || iconName,
               name: glyph.metadata.name
             });
             fontStream.write(glyph);
-            unicordRecord[info.unicode] = true;
+            unicordRecord[unicode] = true;
             return false; // 已处理，下次遍历不循环
           });
 
+          // 这里都是没有指定unicode的
           fileList.forEach((file, index) => {
             const filePath = path.resolve(svgsPath, file);
             const baseName = path.basename(file, '.svg');
             const glyph = fs.createReadStream(filePath);
-            const unicode = (function () {
-              if (prependUnicode) {
-                if (prependReg.test(baseName)) {
-                  let _hex = baseName.match(prependReg)(1).replace('0x', '');
-                  return _hex.fromCharCode(parseInt(_hex, 16)); // 转为unicode
-                } else {
-                  let _uc = getUnicode();
-                  let newName = `0x${_uc.charCodeAt(0).toString(16)}-${newName}`;
-                  fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
-                  return _uc;
-                }
-              } else {
-                return getUnicode();
-              }
-            })();
             const iconInfo = iconInfos[baseName] || {};
+            const unicode = getUnicode();
             const hex = unicode.charCodeAt(0).toString(16);
+            if (prependUnicode) {
+              fs.renameSync(filePath, path.resolve(svgsPath, `0x${hex}-${baseName}.svg`));
+            }
             glyph.metadata = {
               unicode: [unicode],
               name: iconInfo.name || baseName
