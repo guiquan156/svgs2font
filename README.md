@@ -40,17 +40,17 @@ module.exports = {
 
 The [svgicons2svgfont](https://github.com/nfroidure/svgicons2svgfont#svgicons2svgfontoptions) are available:
 
-options.fontName (required)
-options.fontWeight
-options.fontStyle
-options.fixedWidth
-options.centerHorizontally
-options.normalize
-options.fontHeight
-options.round
-options.descent
-options.metadata
-options.log
+- options.fontName (required)
+- options.fontWeight
+- options.fontStyle
+- options.fixedWidth
+- options.centerHorizontally
+- options.normalize
+- options.fontHeight
+- options.round
+- options.descent
+- options.metadata
+- options.log
 
 
 #### other options
