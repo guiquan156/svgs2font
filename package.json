@@ -10,7 +10,10 @@
   },
   "scripts": {
     "test": "mocha test",
-    "test-cli": "./svgs2font.js --configFile test/iconfont.config.js"
+    "test-cli": "./svgs2font.js --configFile test/iconfont.config.js",
+    "format": "prettier --write \"**/*.js\"",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push origin master && git push origin master --tags"
   },
   "keywords": [
     "iconfont",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.0.2"
+    "mocha": "^6.0.2",
+    "prettier": "^1.17.1"
   }
 }
