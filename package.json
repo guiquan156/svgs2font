@@ -1,6 +1,6 @@
 {
   "name": "svgs2font",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "create iconfont from svgs",
   "main": "index.js",
   "bin": "svgs2font.js",
@@ -12,7 +12,7 @@
     "test": "mocha test",
     "test-cli": "./svgs2font.js --configFile test/iconfont.config.js",
     "format": "prettier --write \"**/*.js\"",
-    "version": "npm run format && git add -A src",
+    "version": "npm run format && git add -A .",
     "postversion": "git push origin master && git push origin master --tags"
   },
   "keywords": [
