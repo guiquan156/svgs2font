@@ -1,6 +1,6 @@
 {
   "name": "svgs2font",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "create iconfont from svgs",
   "main": "index.js",
   "bin": "svgs2font.js",
