@@ -75,9 +75,13 @@ class Svgs2font {
       fontName,
       glyphs: []
     };
+    const renameList = [];
     return new Promise((resolve, reject) => {
       fontStream.pipe(fs.createWriteStream(path.resolve(output, `${fontFileName}.svg`)))
         .on('finish', function () {
+          renameList.forEach(item => {
+            fs.renameSync(item.filePath, item.newFilePath);
+          });
           resolve(fontData);
         })
         .on('error', function (err) {
@@ -125,7 +129,10 @@ class Svgs2font {
 
             if (prependUnicode) {
               let newName = `0x${hex}-${iconName}`;
-              fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
+              // fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
+              renameList.push({
+                filePath, newFilePath: path.resolve(svgsPath, `${newName}.svg`)
+              });
             }
 
             glyph.metadata = {
@@ -151,7 +158,10 @@ class Svgs2font {
             const unicode = getUnicode();
             const hex = unicode.charCodeAt(0).toString(16);
             if (prependUnicode) {
-              fs.renameSync(filePath, path.resolve(svgsPath, `0x${hex}-${baseName}.svg`));
+              // fs.renameSync(filePath, path.resolve(svgsPath, `0x${hex}-${baseName}.svg`));
+              renameList.push({
+                filePath, newFilePath: path.resolve(svgsPath, `0x${hex}-${baseName}.svg`)
+              });
             }
             glyph.metadata = {
               unicode: [unicode],
