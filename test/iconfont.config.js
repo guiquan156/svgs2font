@@ -7,15 +7,15 @@ module.exports = {
   fontFileName: 'fontFileName',
   prependUnicode: true,
   iconInfos: {
-    'Dollar2': {
+    Dollar2: {
       unicode: '\uE602',
       name: 'dollar2',
-      title: '美元'
+      title: '美元',
     },
     'check-circle': {
       unicode: '\uE613',
       name: 'checkCircle',
-      title: '检查圆形'
-    }
-  }
-}
+      title: '检查圆形',
+    },
+  },
+};

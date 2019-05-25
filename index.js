@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const path = require('path');
 
@@ -10,8 +9,7 @@ const ttf2woff2 = require('ttf2woff2');
 const ejs = require('ejs');
 
 class Svgs2font {
-
-  constructor (options = {}) {
+  constructor(options = {}) {
     const {
       fontName = 'iconfont', // demo中的fontFamily
       fontFileName = 'iconfont', // 生成文件的文件名，如iconfont.css
@@ -26,76 +24,100 @@ class Svgs2font {
       demoCssTplPath = path.resolve(__dirname, 'tmpls/demoTpl.css'), // demo.css模板(copy from ali iconfont)，一般不需要修改
       iconInfos = {}, // 设定iconfont对应的unicode，title，name；key为文件名，可以设置unicode、name（默认basename）、title（默认name，demo中显示）
       prependUnicode = false,
-      fontStyle, fontWeight, fixedWidth, centerHorizontally, normalize,
-      fontHeight, round, ascent, log = function () {}
+      fontStyle,
+      fontWeight,
+      fixedWidth,
+      centerHorizontally,
+      normalize,
+      fontHeight,
+      round,
+      ascent,
+      log = function() {},
     } = options;
 
     this.options = {
-      fontName, output, svgsPath, startUnicode, isCreateDemo,
-      iconfontTplPath, demoHtmlTplPath, demoCssTplPath,
-      fontFileName, cssPrefix, className, iconInfos, prependUnicode
+      fontName,
+      output,
+      svgsPath,
+      startUnicode,
+      isCreateDemo,
+      iconfontTplPath,
+      demoHtmlTplPath,
+      demoCssTplPath,
+      fontFileName,
+      cssPrefix,
+      className,
+      iconInfos,
+      prependUnicode,
     };
 
     // options for svgicons2svgfont
     this.svgiconsOpt = {
-      fontName, fontStyle, fontWeight, fixedWidth, centerHorizontally, normalize,
-      fontHeight, round, ascent, log
-    }
+      fontName,
+      fontStyle,
+      fontWeight,
+      fixedWidth,
+      centerHorizontally,
+      normalize,
+      fontHeight,
+      round,
+      ascent,
+      log,
+    };
   }
 
-  async create () {
+  async create() {
     const { isCreateDemo, output, fontFileName } = this.options;
     let fontData = await this.svgicons2svgfont(this.svgiconsOpt);
     const svg = await this.readFile(path.resolve(output, `${fontFileName}.svg`));
     const ttf = await this.svg2ttf(svg);
 
-    const fonts = await Promise.all([
-      this.ttf2eot(ttf.buffer),
-      this.ttf2woff(ttf.buffer),
-      this.ttf2woff2(ttf.buffer)
-    ]);
+    const fonts = await Promise.all([this.ttf2eot(ttf.buffer), this.ttf2woff(ttf.buffer), this.ttf2woff2(ttf.buffer)]);
 
     if (isCreateDemo) {
       fontData = {
         ...fontData,
         options: this.options,
-        base64: fonts[2].toString('base64')
+        base64: fonts[2].toString('base64'),
       };
       this.createDemo(fontData);
     }
   }
 
-  svgicons2svgfont () {
-    const {fontName, output, svgsPath, startUnicode, fontFileName, iconInfos, prependUnicode} = this.options;
+  svgicons2svgfont() {
+    const { fontName, output, svgsPath, startUnicode, fontFileName, iconInfos, prependUnicode } = this.options;
     const fontStream = new SVGIcons2svgfont({
-      fontName
+      fontName,
     });
-    const prependReg = /(?:0x((?:[0-9]|[a-e]){4})-)?(.*)/i
+    const prependReg = /(?:0x((?:[0-9]|[a-e]){4})-)?(.*)/i;
     const fontData = {
       fontName,
-      glyphs: []
+      glyphs: [],
     };
     const renameList = [];
     return new Promise((resolve, reject) => {
-      fontStream.pipe(fs.createWriteStream(path.resolve(output, `${fontFileName}.svg`)))
-        .on('finish', function () {
+      fontStream
+        .pipe(fs.createWriteStream(path.resolve(output, `${fontFileName}.svg`)))
+        .on('finish', function() {
           renameList.forEach(item => {
             fs.renameSync(item.filePath, item.newFilePath);
           });
           resolve(fontData);
         })
-        .on('error', function (err) {
+        .on('error', function(err) {
           reject(err);
         });
 
-        this.readDir(svgsPath).then(fileList => {
+      this.readDir(svgsPath)
+        .then(fileList => {
           const unicordRecord = {}; // 记录已经被占用的unicode
           let curUnicode = startUnicode; // unicode记录当前位置
           const getUnicode = () => {
             while (true) {
               let _cur = curUnicode;
               curUnicode = this.unicodeAdd(curUnicode, 1); // 往后移一位
-              if (!unicordRecord[_cur]) { // 不在iconInfos中，未被占用，返回这个unicode
+              if (!unicordRecord[_cur]) {
+                // 不在iconInfos中，未被占用，返回这个unicode
                 return _cur;
               }
             }
@@ -109,7 +131,7 @@ class Svgs2font {
             const baseMch = baseName.match(prependReg);
             const iconName = baseMch ? baseMch[2] : baseName;
 
-            const unicode = (function () {
+            const unicode = (function() {
               if (iconInfos[iconName] && iconInfos[iconName].unicode) {
                 return iconInfos[iconName].unicode;
               }
@@ -131,18 +153,19 @@ class Svgs2font {
               let newName = `0x${hex}-${iconName}`;
               // fs.renameSync(filePath, path.resolve(svgsPath, `${newName}.svg`));
               renameList.push({
-                filePath, newFilePath: path.resolve(svgsPath, `${newName}.svg`)
+                filePath,
+                newFilePath: path.resolve(svgsPath, `${newName}.svg`),
               });
             }
 
             glyph.metadata = {
               unicode: [unicode],
-              name: info.name || iconName
+              name: info.name || iconName,
             };
             fontData.glyphs.push({
               hex,
               title: info.title || info.name || iconName,
-              name: glyph.metadata.name
+              name: glyph.metadata.name,
             });
             fontStream.write(glyph);
             unicordRecord[unicode] = true;
@@ -160,28 +183,30 @@ class Svgs2font {
             if (prependUnicode) {
               // fs.renameSync(filePath, path.resolve(svgsPath, `0x${hex}-${baseName}.svg`));
               renameList.push({
-                filePath, newFilePath: path.resolve(svgsPath, `0x${hex}-${baseName}.svg`)
+                filePath,
+                newFilePath: path.resolve(svgsPath, `0x${hex}-${baseName}.svg`),
               });
             }
             glyph.metadata = {
               unicode: [unicode],
-              name: iconInfo.name || baseName
+              name: iconInfo.name || baseName,
             };
             fontData.glyphs.push({
               hex,
               title: iconInfo.title || baseName,
-              name: glyph.metadata.name
+              name: glyph.metadata.name,
             });
             fontStream.write(glyph);
           });
           fontStream.end();
-        }).catch(err => {
+        })
+        .catch(err => {
           reject(err);
         });
     });
   }
 
-  svg2ttf (svg) {
+  svg2ttf(svg) {
     const { output, fontFileName } = this.options;
 
     return new Promise((resolve, reject) => {
@@ -189,62 +214,59 @@ class Svgs2font {
       this.writeFile(path.resolve(output, `${fontFileName}.ttf`), ttf.buffer)
         .then(() => {
           resolve(ttf);
-        }).catch(reject);
+        })
+        .catch(reject);
     });
   }
 
-  ttf2eot (ttfUint8Arr) {
+  ttf2eot(ttfUint8Arr) {
     const { output, fontFileName } = this.options;
     const filePath = path.resolve(output, `${fontFileName}.eot`);
     const eotBuff = Buffer.from(ttf2eot(ttfUint8Arr).buffer);
     return new Promise((resolve, reject) => {
-      this.writeFile(filePath, eotBuff).then(() => {
-        resolve(eotBuff);
-      }).catch(reject);
+      this.writeFile(filePath, eotBuff)
+        .then(() => {
+          resolve(eotBuff);
+        })
+        .catch(reject);
     });
   }
 
-  ttf2woff (ttfUint8Arr) {
+  ttf2woff(ttfUint8Arr) {
     const { output, fontFileName } = this.options;
     const filePath = path.resolve(output, `${fontFileName}.woff`);
     const woffBuff = Buffer.from(ttf2woff(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
-      this.writeFile(filePath, woffBuff).then(() => {
-        resolve(woffBuff);
-      }).catch(reject);
+      this.writeFile(filePath, woffBuff)
+        .then(() => {
+          resolve(woffBuff);
+        })
+        .catch(reject);
     });
   }
 
-  ttf2woff2 (ttfUint8Arr) {
+  ttf2woff2(ttfUint8Arr) {
     const { output, fontFileName } = this.options;
     const filePath = path.resolve(output, `${fontFileName}.woff2`);
     const woff2Buff = Buffer.from(ttf2woff2(ttfUint8Arr).buffer);
 
     return new Promise((resolve, reject) => {
-      this.writeFile(filePath, woff2Buff).then(() => {
-        resolve(woff2Buff);
-      }).catch(reject);
+      this.writeFile(filePath, woff2Buff)
+        .then(() => {
+          resolve(woff2Buff);
+        })
+        .catch(reject);
     });
   }
 
-  async createDemo (fontData) {
-    const {
-      output,
-      iconfontTplPath,
-      demoHtmlTplPath,
-      demoCssTplPath,
-      fontFileName
-    } = this.options;
+  async createDemo(fontData) {
+    const { output, iconfontTplPath, demoHtmlTplPath, demoCssTplPath, fontFileName } = this.options;
 
-    const [
-      iconfontTpl,
-      demoHtmlTpl,
-      demoCssTpl
-    ] = await Promise.all([
+    const [iconfontTpl, demoHtmlTpl, demoCssTpl] = await Promise.all([
       this.readFile(iconfontTplPath),
       this.readFile(demoHtmlTplPath),
-      this.readFile(demoCssTplPath)
+      this.readFile(demoCssTplPath),
     ]);
 
     const iconfont = ejs.render(iconfontTpl, fontData);
@@ -254,41 +276,41 @@ class Svgs2font {
     return Promise.all([
       this.writeFile(path.resolve(output, `${fontFileName}.css`), iconfont, 'utf-8'),
       this.writeFile(path.resolve(output, 'demo.html'), demoHtml, 'utf-8'),
-      this.writeFile(path.resolve(output, 'demo.css'), demoCss, 'utf-8')
+      this.writeFile(path.resolve(output, 'demo.css'), demoCss, 'utf-8'),
     ]);
   }
 
-  unicodeAdd (unicode, num) {
+  unicodeAdd(unicode, num) {
     const charCode = unicode.charCodeAt(0) + num;
     const result = String.fromCharCode(charCode);
 
     return result;
   }
 
-  readDir (dirPath) {
-    return new Promise(function (resolve, reject) {
-      fs.readdir(dirPath, function (err, fileList) {
+  readDir(dirPath) {
+    return new Promise(function(resolve, reject) {
+      fs.readdir(dirPath, function(err, fileList) {
         if (err) return reject(err);
         resolve(fileList);
       });
     });
   }
 
-  readFile (path, options = 'utf-8') {
-    return new Promise(function (resolve, reject) {
-      fs.readFile(path, options, function (err, content) {
+  readFile(path, options = 'utf-8') {
+    return new Promise(function(resolve, reject) {
+      fs.readFile(path, options, function(err, content) {
         if (err) return reject(err);
         resolve(content);
       });
     });
   }
 
-  writeFile (path, content, options) {
-    return new Promise(function (resolve, reject) {
-      fs.writeFile(path, content, options, function (err) {
+  writeFile(path, content, options) {
+    return new Promise(function(resolve, reject) {
+      fs.writeFile(path, content, options, function(err) {
         if (err) return reject(err);
         resolve();
-      })
+      });
     });
   }
 }

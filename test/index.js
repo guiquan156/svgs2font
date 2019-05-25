@@ -15,42 +15,42 @@ const iconfont = new Iconfont({
   className: 'className',
   fontFileName: 'fontFileName',
   iconInfos: {
-    'Dollar2': {
+    Dollar2: {
       unicode: '\uE002',
       name: 'dollar2',
-      title: '美元'
+      title: '美元',
     },
     'check-circle': {
       unicode: '\uE013',
       name: 'checkCircle',
-      title: '检查圆形'
-    }
-  }
+      title: '检查圆形',
+    },
+  },
 });
 
-const clearDir = (dirPath) => {
+const clearDir = dirPath => {
   const files = fs.readdirSync(dirPath);
   files.forEach(file => {
     fs.unlinkSync(path.resolve(dirPath, file));
   });
 };
 
-const toArrayBuffer = (buffer) => {
+const toArrayBuffer = buffer => {
   const ab = new ArrayBuffer(buffer.length);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buffer.length; i++) {
     view[i] = buffer[i];
   }
   return ab;
-}
+};
 
-describe('iconfont', function () {
+describe('iconfont', function() {
   const { output, fontFileName } = iconfont.options;
   let fontData = {};
   clearDir(output);
 
-  describe('#svgicons2svgfont()', function () {
-    it('should create an svgfont file and return fontData', async function () {
+  describe('#svgicons2svgfont()', function() {
+    it('should create an svgfont file and return fontData', async function() {
       try {
         fontData = await iconfont.svgicons2svgfont();
         assert.typeOf(fontData, 'object');
@@ -65,48 +65,51 @@ describe('iconfont', function () {
     });
   });
 
-  describe('#svg2ttf', function () {
-    it('should create an ttf file', function (done, fail) {
+  describe('#svg2ttf', function() {
+    it('should create an ttf file', function(done, fail) {
       const svgFont = fs.readFileSync(path.resolve(output, `${fontFileName}.svg`), 'utf-8');
-      iconfont.svg2ttf(svgFont).then((ttf) => {
-        done();
-      }).catch((err) => {
-        fail(err);
-      });
+      iconfont
+        .svg2ttf(svgFont)
+        .then(ttf => {
+          done();
+        })
+        .catch(err => {
+          fail(err);
+        });
     });
   });
 
-  describe('#ttf2eot(), #ttf2woff(), #ttf2woff2()', function () {
-    it('should create eot file by ttf', function () {
+  describe('#ttf2eot(), #ttf2woff(), #ttf2woff2()', function() {
+    it('should create eot file by ttf', function() {
       const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2eot(ttf);
     });
-    it('should create woff file by ttf', function () {
+    it('should create woff file by ttf', function() {
       const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2woff(ttf);
     });
-    it('should create woff2 file by ttf', function () {
+    it('should create woff2 file by ttf', function() {
       const buf = fs.readFileSync(path.resolve(output, `${fontFileName}.ttf`));
       const ttf = new Uint8Array(buf);
       return iconfont.ttf2woff2(ttf);
     });
   });
-  describe('#createDemo', function () {
-    it('should create demo', function () {
+  describe('#createDemo', function() {
+    it('should create demo', function() {
       const woff2 = fs.readFileSync(path.resolve(output, `${fontFileName}.woff2`));
       fontData = {
         ...fontData,
         options: iconfont.options,
-        base64: woff2.toString('base64')
+        base64: woff2.toString('base64'),
       };
       return iconfont.createDemo(fontData);
-    })
+    });
   });
 
-  describe('#create', function () {
-    it('should create all fonts file and demo', function () {
+  describe('#create', function() {
+    it('should create all fonts file and demo', function() {
       clearDir(output);
       return iconfont.create();
     });

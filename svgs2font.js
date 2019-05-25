@@ -26,7 +26,10 @@ program
   .option('-w --fixedWidth', 'creates a monospace font of the width of the largest input icon')
   .option('-ch --centerhorizontally', 'calculate the bounds of a glyph and center it horizontally')
   .option('-n --normalize', 'normalize icons by scaling them to the height of the highest icon')
-  .option('-h --height [value]', 'the output font height [MAX(icons.height)] (icons will be scaled so the highest has this height)')
+  .option(
+    '-h --height [value]',
+    'the output font height [MAX(icons.height)] (icons will be scaled so the highest has this height)',
+  )
   .option('-r --round [value]', 'setup the SVG path rounding [10e12]')
   .option('-d --descent [value]', 'the font descent [0]')
   .option('-a --ascent [value]', 'the font ascent [height - descent]')
@@ -34,7 +37,7 @@ program
   .option('-m --metadata', 'content of the metadata tag')
   .parse(process.argv);
 
-async function create () {
+async function create() {
   let fileOpt = {};
 
   if (program.configFile) {
@@ -44,7 +47,7 @@ async function create () {
 
   let options = {
     ...program,
-    ...fileOpt
+    ...fileOpt,
   };
 
   const svgs2font = new Svgs2font(options);
@@ -52,5 +55,3 @@ async function create () {
 }
 
 create();
-
-
