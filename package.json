@@ -25,7 +25,7 @@
   "dependencies": {
     "commander": "^2.19.0",
     "ejs": "^2.6.1",
-    "svg2ttf": "^4.2.0",
+    "svg2ttf": "^6.0.3",
     "svgicons2svgfont": "^9.0.4",
     "ttf2eot": "^2.0.0",
     "ttf2woff": "^2.0.1",
